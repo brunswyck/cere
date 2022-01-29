@@ -11,7 +11,7 @@ ansible setup
 
 I use [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/), install it with: `sudo apt-get install virtualenvwrapper` to make using python environments easier
 
-0. create your own ansible folder or use the default ~/.ansible directory
+0. create your own ansible folder or use the default `~/.ansible` directory
 1. use of python environment
 
   create env: `mkvirtualenv validators`
@@ -21,7 +21,28 @@ I use [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/), 
 
    ```bash
    pip3 install ansible-core ansible
+
    # validate your ansible installation:
    which ansible
    /home/dadude/venv/validators/bin/ansible
+
+   ansible --version
+ansible [core 2.12.1]
+  config file = None
+  configured module search path = ['/home/dadude/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
+  ansible python module location = /home/dadude/venv/validators/lib/python3.8/site-packages/ansible
+  ansible collection location = /home/dadude/.ansible/collections:/usr/share/ansible/collections
+  executable location = /home/dadude/venv/validators/bin/ansible
+  python version = 3.8.10 (default, Nov 26 2021, 20:14:08) [GCC 9.3.0]
+  jinja version = 3.0.3
+  libyaml = True
+
+   ```
+3. adjust defaults in `~/.ansible/ansible.cfg` as you wish
+
+   ```ini
+   [defaults]<
+   inventory       = ~/.ansible/inventory
+   private_key_file = ~/.ssh/
+   vault_password_file = vault.txt
    ```
