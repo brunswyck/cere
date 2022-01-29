@@ -44,7 +44,7 @@ ansible [core 2.12.1]
 
    ```ini
    [defaults]<
-   inventory       = ~/.ansible/inventory
-   private_key_file = ~/.ssh/
+   inventory       = ~/.ansible/hosts
+   private_key_file = ~/.ssh/your_private_key
    vault_password_file = vault.txt
    ```
