@@ -13,13 +13,15 @@ I use [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/), 
 
 0. create your own ansible folder or use the default ~/.ansible directory
 1. use of python environment
-  - create env: `mkvirtualenv validators`
-  - move into env: `workon validators`
-  - exit env: `deactivate`
+
+  create env: `mkvirtualenv validators`
+  move into env: `workon validators`
+  exit env: `deactivate`
 2. install [ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
-   `pip3 install ansible-core ansible`
-   validate your ansible installation:
+
    ```bash
+   pip3 install ansible-core ansible
+   # validate your ansible installation:
    which ansible
    /home/dadude/venv/validators/bin/ansible
    ```
