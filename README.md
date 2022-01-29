@@ -11,12 +11,13 @@ ansible setup
 
 I use [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/), install it with: `sudo apt-get install virtualenvwrapper` to make using python environments easier
 
-0. create your own ansible folder or use the default `~/.ansible` directory
+0. create your own ansible folder with its own ansible.cfg copy or use the default `~/.ansible` directory
 1. use of python environment
 
   create env: `mkvirtualenv validators`
   move into env: `workon validators`
   exit env: `deactivate`
+
 2. install [ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 
    ```bash
@@ -38,6 +39,7 @@ ansible [core 2.12.1]
   libyaml = True
 
    ```
+
 3. adjust defaults in `~/.ansible/ansible.cfg` as you wish
 
    ```ini
