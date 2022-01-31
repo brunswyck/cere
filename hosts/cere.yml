@@ -1,6 +1,6 @@
 all:
   hosts:
-    nuclearwinter:
+    your_hostname_here:
   vars:
     default:
       pkgs: [vim, mlocate]
@@ -9,9 +9,7 @@ all:
       children:
         testnet:
           hosts:
-            nuclearwinter:
-          vars:
-            admin: "dadude"
+            your_hostname_here:
         mainnet:
         devnet:
         qanet:

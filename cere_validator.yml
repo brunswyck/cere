@@ -1,6 +1,7 @@
 ---
 - name: bootstrap validators
   hosts: localhost
+  # hosts: testnet
   gather_facts: false
   pre_tasks:
     - setup:
