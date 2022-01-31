@@ -6,9 +6,9 @@
     - vault/secrets.yml
     - group_vars/all.yml
   tasks:
-    - debug:
-        msg:
-          - "{{ hostvars[inventory_hostname].ansible_devices.keys() | map('regex_search', 'nvme.*') | select('string') }}"
+#    - debug:
+#        msg:
+#          - "{{ hostvars[inventory_hostname].ansible_devices.keys() | map('regex_search', 'nvme.*') | select('string') }}"
 
     - name: ensure local folder for cli output
       local_action:
@@ -23,11 +23,13 @@
       ansible.builtin.command:
         cmd: lsblk
       register: hdinfo
+      changed_when: False
 
     - name: get human readable cpu information
       ansible.builtin.shell:
         cmd: lscpu
       register: cpuinfo
+      changed_when: False
 
     # todo: make role and template this
     - name: store info in text file on ansible controller
@@ -38,7 +40,6 @@
         create: yes
         insertafter: EOF
       loop:
-        - "ip-address"
         - "{{ ansible_facts.default_ipv4.address }}"
         - "{{ ansible_memtotal_mb }}"
         - "{{ hdinfo.stdout }}"
@@ -48,10 +49,9 @@
         - "{{ ansible_processor_nproc }}"
         - "{{ ansible_processor_threads_per_core }}"
         - "{{ ansible_processor_vcpus }}"
-        - "{{ cpuinfo.stdout }}"
       when: not ansible_check_mode
 
-
+# this is work in progress.. play works though
 # wanted:
 # - IP address: 
 # - Peer ID

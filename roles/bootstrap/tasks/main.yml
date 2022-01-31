@@ -1,6 +1,29 @@
 ---
 # tasks file for roles/bootstrap
-#- include_vars: ../../../vault/secrets.yml
 # if you need encrypted vars in role you need to load file again
+- include_vars: vault/secrets.yml
+# all:!mainnet - all hosts except those in testnet group
+# https://docs.ansible.com/ansible/latest/user_guide/intro_patterns.html
+
+- name: store hosts in Cere inventory group in cere_hosts list
+  set_fact:
+    cere_hosts: "{{ query('inventory_hostnames', 'cere') }}" # query always returns a list
+
 - debug:
-    msg: "ssh port: {{ ssh.port }}"
+    msg: "{{ cere_hosts }}"
+
+- name: "update Cere inventory group hostnames in /etc/hosts"
+  local_action:
+    module: ansible.builtin.blockinfile
+    path: /etc/hosts
+    block: |
+      {{ ansible_hostname }} {{ hostvars[item]['ansible_facts']['default_ipv4']['address'] }}
+    marker: "# {mark} ANSIBLE MANAGED CERE VALIDATORS"
+    state: present
+  when: hostvars[item].ansible_facts.default_ipv4.address is defined
+  loop: "{{ cere_hosts }}"
+  become: True
+  check_mode: False  # execute in check mode
+  # had to apply group write to /etc/hosts first on my localhost
+  # change "dadude" with your username :)
+  # sudo chown root:dadude /etc/hosts;sudo chmod ug=rw /etc/hosts

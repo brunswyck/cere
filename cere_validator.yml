@@ -1,17 +1,15 @@
 ---
 - name: bootstrap validators
-  hosts: localhost
-  # hosts: testnet
-  gather_facts: false
+  hosts: cere
+  gather_facts: True
   pre_tasks:
     - setup:
         gather_subset:
           - os_family
   vars_files:
     - vault/secrets.yml      # my encrypted variables
-      # see https://docs.ansible.com/ansible/latest/cli/ansible-vault.html
     - group_vars/all.yml     # variables that apply to all servers
-    - group_vars/testnet.yml # variables that apply to all testnet servers
+    - group_vars/cere.yml    # variables that apply to all cere servers
 
   roles:
     - role: bootstrap
