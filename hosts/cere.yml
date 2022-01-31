@@ -1,5 +1,8 @@
 all:
   hosts:
+    testing:
+      ansible_host: "11.22.33.44"
+      ansible_port: 22
   vars:
     default:
       pkgs: [vim, mlocate]
@@ -8,7 +11,7 @@ all:
       children:
         testnet:
           hosts:
-            nuclearwinter:
+            testing:
         mainnet:
         devnet:
         qanet:
