@@ -1,0 +1,34 @@
+---
+- name: bootstrap validators
+  hosts: localhost
+  gather_facts: false
+  pre_tasks:
+    - setup:
+        gather_subset:
+          - os_family
+  vars_files:
+    - vault/secrets.yml      # my encrypted variables
+      # see https://docs.ansible.com/ansible/latest/cli/ansible-vault.html
+    - group_vars/all.yml     # variables that apply to all servers
+    - group_vars/testnet.yml # variables that apply to all testnet servers
+
+  roles:
+    - role: bootstrap
+
+    # add local ssh config to ~/.ssh/config.d/<yourservername>
+    #- role: ssh_configd_add_node
+    #      vars:
+    #        server_ip: 
+    #
+    #    - role: docker_setup
+    #      when: ansible_facts['distribution'] == 'Ubuntu'
+    #      tags: docker
+    #
+    #    - role: cere
+    #      vars:  # vars here override those defined in role/defaults/main.yml
+    #        network: "devnet"  # devnet|devs-cluster-[12345]|mainnet|qanet|testnet
+    #
+    #    - role: ufw
+    #      vars:
+    #        ports: { allow: [30333], deny: [9933, 9944] }
+    #      tags: ufw

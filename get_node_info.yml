@@ -1,0 +1,61 @@
+---
+- name: get validator info
+  hosts: testnet  # validator(s) you target
+  gather_facts: True
+  vars_files:
+    - vault/secrets.yml
+    - group_vars/all.yml
+  tasks:
+    - debug:
+        msg:
+          - "{{ hostvars[inventory_hostname].ansible_devices.keys() | map('regex_search', 'nvme.*') | select('string') }}"
+
+    - name: ensure local folder for cli output
+      local_action:
+        module: ansible.builtin.file
+        path: "{{ local.outputs }}"
+        state: directory
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
+      run_once: True
+
+    - name: fetch storage info
+      ansible.builtin.command:
+        cmd: lsblk
+      register: hdinfo
+
+    - name: get human readable cpu information
+      ansible.builtin.shell:
+        cmd: lscpu
+      register: cpuinfo
+
+    # todo: make role and template this
+    - name: store info in text file on ansible controller
+      local_action:
+        module: ansible.builtin.lineinfile
+        dest: "{{ local.outputs }}/{{ ansible_hostname }}-details-{{ ansible_date_time.time }}.txt"
+        line: "{{ item }}"
+        create: yes
+        insertafter: EOF
+      loop:
+        - "ip-address"
+        - "{{ ansible_facts.default_ipv4.address }}"
+        - "{{ ansible_memtotal_mb }}"
+        - "{{ hdinfo.stdout }}"
+        - "{{ ansible_processor[2] }}"
+        - "{{ ansible_processor_cores }}"
+        - "{{ ansible_processor_count }}"
+        - "{{ ansible_processor_nproc }}"
+        - "{{ ansible_processor_threads_per_core }}"
+        - "{{ ansible_processor_vcpus }}"
+        - "{{ cpuinfo.stdout }}"
+      when: not ansible_check_mode
+
+
+# wanted:
+# - IP address: 
+# - Peer ID
+# - Hardware specs: lscpu
+#
+# - Provider
+# - Region

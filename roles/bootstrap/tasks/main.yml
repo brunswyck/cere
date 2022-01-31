@@ -1,0 +1,6 @@
+---
+# tasks file for roles/bootstrap
+#- include_vars: ../../../vault/secrets.yml
+# if you need encrypted vars in role you need to load file again
+- debug:
+    msg: "ssh port: {{ ssh.port }}"

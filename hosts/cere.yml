@@ -1,0 +1,17 @@
+all:
+  hosts:
+    nuclearwinter:
+  vars:
+    default:
+      pkgs: [vim, mlocate]
+  children:
+    cere:
+      children:
+        testnet:
+          hosts:
+            nuclearwinter:
+          vars:
+            admin: "dadude"
+        mainnet:
+        devnet:
+        qanet:

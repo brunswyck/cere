@@ -1,0 +1,11 @@
+---
+local:
+  outputs: ~/outputs
+remote:
+  outputs: ~/outputs
+admin: admin_username
+ssh:
+  private: "~/.ssh/yourkeyhere"
+  port: 22222
+default:
+  pkgs: [vim, mlocate]
