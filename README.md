@@ -17,11 +17,11 @@ I use [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/), 
 0. create your folder and generate your ansible.cfg copy:
    `ansible-config init --disabled -t all > ansible.cfg` or use the default `~/.ansible` file
 
-1. use of python environment
+1. using a python environment
 
-  create env: `mkvirtualenv validators`
-  move into env: `workon validators`
-  exit env: `deactivate`
+   create env: `mkvirtualenv validators`
+   move into env: `workon validators`
+   exit env: `deactivate`
 
 2. install [ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 
@@ -33,16 +33,15 @@ I use [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/), 
    /home/dadude/venv/validators/bin/ansible
 
    ansible --version
-ansible [core 2.12.1]
-  config file = None
-  configured module search path = ['/home/dadude/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
-  ansible python module location = /home/dadude/venv/validators/lib/python3.8/site-packages/ansible
-  ansible collection location = /home/dadude/.ansible/collections:/usr/share/ansible/collections
-  executable location = /home/dadude/venv/validators/bin/ansible
-  python version = 3.8.10 (default, Nov 26 2021, 20:14:08) [GCC 9.3.0]
-  jinja version = 3.0.3
-  libyaml = True
-
+   ansible [core 2.12.1]
+   config file = None
+   configured module search path = ['/home/dadude/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
+   ansible python module location = /home/dadude/venv/validators/lib/python3.8/site-packages/ansible
+   ansible collection location = /home/dadude/.ansible/collections:/usr/share/ansible/collections
+   executable location = /home/dadude/venv/validators/bin/ansible
+   python version = 3.8.10 (default, Nov 26 2021, 20:14:08) [GCC 9.3.0]
+   jinja version = 3.0.3
+   libyaml = True
    ```
 
 3. adjust defaults in `ansible.cfg` as needed

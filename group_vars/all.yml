@@ -3,9 +3,9 @@ local:
   outputs: ~/outputs
 remote:
   outputs: ~/outputs
-admin: admin_username
+admin: dadude
 ssh:
-  private: "~/.ssh/yourkeyhere"
-  port: 22222
+  private: "~/.ssh/metaverse"
+  port: 99
 default:
   pkgs: [vim, mlocate]
