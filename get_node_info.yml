@@ -19,6 +19,17 @@
         group: "{{ ansible_user_id }}"
       run_once: True
 
+    - name: get geoip information
+      ansible.builtin.command:
+        cmd: curl --silent {{ geoapi }}
+      register: geoinfo
+
+    - set_fact:
+        geodata: "{{ geoinfo.stdout }}"
+
+    - debug:
+        msg: "{{ geodata.city }}"
+
     - name: fetch storage info
       ansible.builtin.command:
         cmd: lsblk
