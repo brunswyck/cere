@@ -1,2 +1,4 @@
 ---
 # defaults file for server_info
+geoapi: https://ipinfo.io/json
+jsonrpc_port: 9933

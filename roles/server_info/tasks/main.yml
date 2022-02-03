@@ -25,9 +25,9 @@
   register: hdinfo
   changed_when: False
 
-- name: check if localhost is listening on 9933 port
+- name: check if localhost is listening on "{{ jsonrpc_port }}" port
   ansible.builtin.command:
-    cmd: ss --no-header -tp state listening sport = :9933
+    cmd: "ss --no-header -tp state listening sport = :{{ jsonrpc_port }}"
   register: rpc_port_open
   tags: peerid
   changed_when: False
@@ -36,7 +36,7 @@
   ansible.builtin.command:
     cmd: >
       curl --silent --location
-      --request POST 'http://127.0.0.1:9933/'
+      --request POST 'http://127.0.0.1:{{ jsonrpc_port }}/'
       --header 'Content-Type: application/json'
       --data-raw '{"id":1, "jsonrpc":"2.0", "method": "system_localPeerId"}'
   register: peerid

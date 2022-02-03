@@ -2,10 +2,6 @@
 - name: get validator info
   hosts: cere
   gather_facts: True
-  pre_tasks:
-    - setup:
-        gather_subset:
-          - os_family
   vars_files:
     - vault/secrets.yml      # my encrypted variables
     - group_vars/all.yml     # variables that apply to all servers

@@ -9,4 +9,3 @@ ssh:
   port: 99
 default:
   pkgs: [vim, mlocate]
-geoapi: https://ipinfo.io/json
