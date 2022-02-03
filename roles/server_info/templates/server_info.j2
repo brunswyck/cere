@@ -1,0 +1,35 @@
+server information
+------------------
+
+ipv4-address: {{ ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]) }}
+ipv6-address: {{ ansible_default_ipv6.address|default(ansible_all_ipv6_addresses[0]) }}
+
+geo
+ provider: {{ geodata.org }}
+ country: {{ geodata.country }}
+ region: {{ geodata.region }}
+ city: {{ geodata.city }}
+
+cpu
+ model: {{ ansible_processor[2] }}
+ cores: {{ ansible_processor_cores }}
+ count: {{ ansible_processor_count }}
+ nproc: {{ ansible_processor_nproc }}
+ threads/core: {{ ansible_processor_threads_per_core }}
+ vcpus: {{ ansible_processor_vcpus }}
+
+memory
+ total in mb: {{ ansible_memtotal_mb }}
+ free: {{ ansible_memfree_mb }}
+
+distro
+{{ ansible_lsb|to_nice_yaml }}
+
+hdd
+ {{ hdinfo.stdout }}
+
+{% if peerid_result is defined %}
+peerid: {{ peerid_result }}
+{% else %}
+no rpc service listening
+{% endif %}

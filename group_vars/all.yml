@@ -8,5 +8,5 @@ ssh:
   private: "~/.ssh/metaverse"
   port: 99
 default:
-  pkgs: [vim, mlocate, jq]
+  pkgs: [vim, mlocate]
 geoapi: https://ipinfo.io/json

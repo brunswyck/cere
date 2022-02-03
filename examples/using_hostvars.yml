@@ -1,0 +1,4 @@
+- debug:
+    msg:
+      - "{{ hostvars[inventory_hostname].ansible_devices.keys() | map('regex_search', 'nvme.*') | select('string') }}"
+

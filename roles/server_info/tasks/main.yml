@@ -1,0 +1,58 @@
+---
+# tasks file for server_info
+- name: ensure local folder for cli output
+  local_action:
+    module: ansible.builtin.file
+    path: "{{ local.outputs }}"
+    state: directory
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+  run_once: True
+
+- name: get geoip information
+  ansible.builtin.command:
+    cmd: curl --silent {{ geoapi }}
+  register: geoinfo
+  changed_when: False
+
+# geoinfo: { city, country, hostname, ip, loc, org, postal, region, timezone }
+- set_fact:
+    geodata: "{{ geoinfo.stdout }}"
+
+- name: fetch storage info
+  ansible.builtin.command:
+    cmd: lsblk
+  register: hdinfo
+  changed_when: False
+
+- name: check if localhost is listening on 9933 port
+  ansible.builtin.command:
+    cmd: ss --no-header -tp state listening sport = :9933
+  register: rpc_port_open
+  tags: peerid
+  changed_when: False
+
+- name: get Peer ID
+  ansible.builtin.command:
+    cmd: >
+      curl --silent --location
+      --request POST 'http://127.0.0.1:9933/'
+      --header 'Content-Type: application/json'
+      --data-raw '{"id":1, "jsonrpc":"2.0", "method": "system_localPeerId"}'
+  register: peerid
+  when: rpc_port_open.stdout | length > 0
+  # {"jsonrpc":"2.0","result":"12D3KosomeobscurelettershereakKxzZCD6","id":1}
+  tags: peerid
+  changed_when: False
+
+- set_fact:
+    peerid_result: '{{ peerid.stdout|from_json|json_query("result") }}'
+  when: rpc_port_open.stdout | length > 0
+  tags: peerid
+
+- name: writing host info to file
+  local_action:
+    module: ansible.builtin.template
+    src: server_info.j2
+    dest: "{{ local.outputs }}/{{ ansible_hostname }}-details-{{ ansible_date_time.time }}.txt"
+  when: not ansible_check_mode

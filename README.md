@@ -15,7 +15,7 @@ If you want to contribute, hit me up on discord and I'll configure your user on 
 I use [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/), install it with: `sudo apt-get install virtualenvwrapper` to make using python environments easier
 
 0. create your folder and generate your ansible.cfg copy:
-   `ansible-config init --disabled -t all > ansible.cfg` or use the default `~/.ansible` file
+   `ansible-config init --disabled -t all > ansible.cfg` or use the default `~/$HOME/.ansible.cfg` file
 
 1. using a python environment
 
