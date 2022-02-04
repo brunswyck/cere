@@ -1,7 +1,12 @@
 ---
 - name: bootstrap validators
-  hosts: cere
+  # add hostname or groupname here where validator(d) needs to run
+  # as defined in hosts/ inventory folder
+  hosts: testing
   gather_facts: True
+  vars:
+    ansible_user: root
+    ansible_port: 22
   pre_tasks:
     - setup:
         gather_subset:
@@ -11,8 +16,16 @@
     - group_vars/all.yml     # variables that apply to all servers
     - group_vars/cere.yml    # variables that apply to all cere servers
 
+  tasks:
+    - include_tasks: localhost_localadmin.yml
+      vars:
+        ansible_become_pass: "{{ local_password }}"
+        ansible_user: "{{ admin }}"
+
   roles:
     - role: bootstrap
+
+    # - role: bootstrap
 
     # add local ssh config to ~/.ssh/config.d/<yourservername>
     #- role: ssh_configd_add_node

@@ -1,0 +1,11 @@
+---
+- name: "ensure local admin can modify /etc/hosts"
+  local_action:
+    module: ansible.builtin.file
+    path: /etc/hosts
+    owner: root
+    group: "{{ admin }}"
+    mode: 0664
+  become: True
+  # sudo chown root:admin /etc/hosts;sudo chmod ug=rw /etc/hosts
+  # this stops to ask local admin password which is diff from remote admin

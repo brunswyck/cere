@@ -1,11 +1,5 @@
 all:
   hosts:
-    testing:
-      ansible_host: "95.217.236.239"
-      ansible_port: 99
-    nuclearwinter:
-      ansible_host: "65.21.127.147"
-      ansible_port: 99
   vars:
     default:
       pkgs: [vim, mlocate]

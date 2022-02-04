@@ -8,4 +8,4 @@ ssh:
   private: "~/.ssh/metaverse"
   port: 99
 default:
-  pkgs: [vim, mlocate]
+  pkgs: [vim, mlocate, curl]
