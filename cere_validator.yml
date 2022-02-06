@@ -1,7 +1,20 @@
 ---
+- name: operations localhost
+  hosts: localhost
+  gather_facts: True
+  vars_files:
+    - vault/secrets.yml      # my encrypted variables
+
+  roles:
+    - role: update_hosts_file
+      vars:
+        group_to_add: cere  # all hosts from cere will be added to /etc/hosts
+        ansible_become_password: "{{ local_password }}"
+
+    # create when ssh port changed to 99
+    #- role: ssh_include_file
+
 - name: bootstrap validators
-  # add hostname or groupname here where validator(d) needs to run
-  # as defined in hosts/ inventory folder
   hosts: testing
   gather_facts: True
   vars:
@@ -16,14 +29,12 @@
     - group_vars/all.yml     # variables that apply to all servers
     - group_vars/cere.yml    # variables that apply to all cere servers
 
-  tasks:
-    - include_tasks: localhost_localadmin.yml
-      vars:
-        ansible_become_pass: "{{ local_password }}"
-        ansible_user: "{{ admin }}"
-
   roles:
     - role: bootstrap
+    - role: user_profiles
+      tags: user_profiles
+    - role: ssh_server
+      tags: ssh_server
 
     # - role: bootstrap
 

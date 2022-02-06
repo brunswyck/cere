@@ -1,0 +1,3 @@
+---
+# defaults file for roles/user_profiles
+user_pkgs: [bash-completion, git, vim]

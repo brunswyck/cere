@@ -5,6 +5,7 @@
 - [telemetry](https://telemetry.polkadot.io/#all-chains/0x42b9b44b4950b6c1edae543a7696caf8d0a160e9bc0424ab4ab217f7a8ba30dc) type in "Cere"
 - [explorer](https://explorer.cere.network/#/explorer)
 - [github](https://github.com/Cerebellum-Network)
+- [docker hub](https://hub.docker.com/u/cerebellumnetwork)
 
 ansible setup
 =============
@@ -77,3 +78,11 @@ I use [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/), 
    ssh:
      private: "~/.ssh/your-private-key"
    ```
+7. tweak templates in roles to personal preferences like
+
+   ```bash
+   roles/user_profiles/templates/.vimrc.j2
+   roles/user_profiles/templates/.bash_aliases.j2
+   roles/user_profiles/templates/.bash_functions.j2
+   ```
+

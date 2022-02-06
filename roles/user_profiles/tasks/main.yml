@@ -1,0 +1,107 @@
+---
+# tasks file for roles/user_profiles
+- name: include encrypted variables
+  include_vars:
+    file: vault/secrets.yml
+
+- name: install user pkgs as defined in defaults.yml
+  apt:
+    name: "{{ user_pkgs }}"
+    state: present
+  become: True
+
+# generate pwd hash with following command & add to vault/secrets.yml
+# python3 -c 'import crypt,getpass;pw=getpass.getpass();print(crypt.crypt(pw) if (pw==getpass.getpass("Confirm: ")) else exit())'
+- name: create admin user(s)
+  user:
+    name: "{{ item.name }}"
+    state: present
+    groups:
+      - sudo
+    createhome: true
+    system: false
+    append: true
+    password: "{{ item.password }}"
+    shell: /bin/bash
+  loop: "{{ admins }}"  # vault/secrets.yml
+  become: True
+  register: user_creation
+
+- name: install .bash_aliases template
+  template:
+    src: .bash_aliases.j2
+    dest: '/home/{{ item.name }}/.bash_aliases'
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: '0644'
+  loop: "{{ admins }}"
+  become: true
+
+- name: install .bash_functions template
+  template:
+    src: .bash_functions.j2
+    dest: '/home/{{ item.name }}/.bash_functions'
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: '0644'
+  loop: "{{ admins }}"
+  become: true
+
+- name: install .vimrc template
+  template:
+    src: .vimrc.j2
+    dest: '/home/{{ item.name }}/.vimrc'
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: '0644'
+  loop: "{{ admins }}"
+  register: vimrc_install
+  become: true
+
+- ansible.builtin.stat:
+    path: "/home/{{ admin }}/.vim/"
+  register: vim_folder
+
+# https://github.com/VundleVim/Vundle.vim
+- name: install vim plugin handler
+  git:
+    repo: 'https://github.com/VundleVim/Vundle.vim.git'
+    dest: '/home/{{ item.name }}/.vim/bundle/Vundle.vim'
+  become_user: "{{ item.name }}"
+  become: True
+  loop: "{{ admins }}"
+  register: vundle_install
+  ignore_errors: true
+
+- name: install vim plugins
+  ansible.builtin.shell:
+    cmd:  echo -ne '\n' | vim -E -s -c "source ~/.vimrc" -c PluginInstall -c qa
+  register: resultvim
+  loop: "{{ admins }}"
+  become_user: "{{ item.name }}"
+  become: True
+  failed_when: ( resultvim.rc not in [0,1] )
+  ignore_errors: '{{ ansible_check_mode }}'
+  when:
+    - user_creation is succeeded
+    - vimrc_install is succeeded
+    - vundle_install is succeeded
+  changed_when: False
+
+- name: include bash_functions in bashrc
+  blockinfile:
+    path: "/home/{{ item.name }}/.bashrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    insertafter: EOF
+    block: |
+      if [ -f ~/.bash_functions ]; then
+        . ~/.bash_functions
+      fi
+    mode: 0644
+    owner: "{{ item.name }}"
+    validate:  /bin/bash -c "source %s"  # source bashrc file
+  become_user: "{{ item.name }}"
+  become: True
+  loop: "{{ admins }}"
+
+

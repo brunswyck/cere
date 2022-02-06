@@ -1,0 +1,29 @@
+---
+# tasks file for update_hosts_file
+
+- name: "ensure local admin can modify /etc/hosts"
+  local_action:
+    module: ansible.builtin.file
+    path: /etc/hosts
+    owner: root
+    group: "{{ local_admin }}"
+    mode: 0664
+  become: True
+
+- name: store hosts in "{{ group_to_add }}" inventory group in cere_hosts list
+  set_fact:
+    chosen_hosts: "{{ query('inventory_hostnames', '{{ group_to_add }}') }}" # query always returns a list
+- debug:
+    msg: "{{ chosen_hosts }}"
+
+- name: "adding {{ group_to_add }} inventory hostnames to /etc/hosts"
+  local_action:
+    module: ansible.builtin.blockinfile
+    path: /etc/hosts
+    block: |
+      {{ hostvars[item]['ansible_host'] }} {{ hostvars[item]['inventory_hostname'] }}
+    marker: "# {mark} ANSIBLE MANAGED HOST {{ item }}"
+    state: present
+  loop: "{{ chosen_hosts }}"
+  become: True
+  # check_mode: False  # execute in check mode

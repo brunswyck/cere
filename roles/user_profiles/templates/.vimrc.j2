@@ -1,0 +1,149 @@
+" in vim do :PluginUpdate
+" :echo &rtp
+" set rtp+=/home/dadude/.vim/bundle/Vundle.vim
+" ---------------------------------------
+set nocompatible " turn off defaults required
+filetype off     " turn off defaults required
+" set runtime path to include vundle and initialize
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+
+" let Vundle manage Vundle, required
+Plugin 'VundleVim/Vundle.vim'
+
+" https://github.com/tpope/vim-sensible
+" sensible defaults
+"
+Plugin 'tpope/vim-sensible'
+
+" surround.vim
+" https://github.com/tpope/vim-surround
+" cs + changthis + bythat
+" t = tags
+Plugin 'tpope/vim-surround'
+
+" quick git commands in vim
+" https://github.com/tpope/vim-fugitive
+Plugin 'tpope/vim-fugitive'
+
+" syntax checker for vim 8 and up
+" Asynchronous Lint Engine
+Plugin 'w0rp/ale'
+
+" http://vimcasts.org/episodes/aligning-text-with-tabular-vim/
+Plugin 'godlygeek/tabular'
+" selection :Tabularize /=  (align visual selection on equals operator)
+
+Plugin 'dhruvasagar/vim-table-mode'
+
+" All of your Plugins must be added before the following line
+call vundle#end()            " required
+filetype plugin indent on    " required
+" To ignore plugin indent changes, instead use:
+"filetype plugin on
+"
+" Brief help
+" :PluginList       - lists configured plugins
+" :PluginInstall    - installs plugins; append `!` to update or just :PluginUpdate
+" :PluginSearch foo - searches for foo; append `!` to refresh local cache
+" :PluginClean      - confirms removal of unused plugins; append `!` to auto-approve removal
+"
+" see :h vundle for more details or wiki for FAQ
+" Put your non-Plugin stuff after this line
+" -----------------------------------------
+
+set nobackup
+set noswapfile
+
+" set tabstops every 4 spaces and set the shiftwidth (the amount you indent)
+" to 2 spaces
+"
+set ts=4 sw=2
+syntax on
+
+set number relativenumber " show relative line numbers
+:augroup numbertoggle
+:  autocmd!
+:  autocmd BufEnter,FocusGained,InsertLeave * set relativenumber
+:  autocmd BufLeave,FocusLost,InsertEnter   * set norelativenumber
+:augroup END
+
+" you need some color in your life :)
+" colorscheme molokai-dark
+" for terminal which supports truecolor
+set termguicolors
+" else set t_Co=256
+set background=dark
+if &term =~ '256color'
+    " Disable Background Color Erase (BCE) so that color schemes
+    " work properly when Vim is used inside tmux and GNU screen.
+    set t_ut=
+endif
+
+" configure keyboard mappings here
+" type Ojj or ojj to quickly insert newline
+" oo and OO go back to cursor position
+inoremap jj <ESC>
+inoremap kk <ESC>
+inoremap hh <ESC>
+map <C-j> <C-W>j
+map <C-k> <C-W>k
+map <C-h> <C-W>h
+map <C-l> <C-W>l
+map ww bi${<ESC>f_i}<ESC>
+
+"nmap oo o<Esc>k
+"nmap OO O<Esc>j
+" set listchars=eol:¬,tab:>-,trail:~,extends:>,precedes:<,space:_
+set lcs=tab:>-,trail:~,extends:>,precedes:<
+set list
+ 
+" Quickly go to line number
+:nnoremap <CR> G
+" Changing case with ~ sign
+" -------------------------
+function! TwiddleCase(str)
+  if a:str ==# toupper(a:str)
+    let result = tolower(a:str)
+  elseif a:str ==# tolower(a:str)
+    let result = substitute(a:str,'\(\<\w\+\>\)', '\u\1', 'g')
+  else
+    let result = toupper(a:str)
+  endif
+  return result
+endfunction
+vnoremap ~ y:call setreg('', TwiddleCase(@"), getregtype(''))<CR>gv""Pgv
+
+set pastetoggle=<F2>
+map <F3> :TableModeToggle<CR>
+" get ReST-compatible tables with vim-table-mode plugin
+let g:table_mode_corner_corner='+'
+let g:table_mode_header_fillchar='='
+
+"Relative with start point or with line number or absolute number lines
+function! NumberToggle()
+    if(&number == 1)
+        set number!
+        set relativenumber!
+      elseif(&relativenumber==1)
+        set relativenumber
+        set number
+      else
+        set norelativenumber
+        set number
+    endif
+endfunction
+
+nnoremap <C-n> :call NumberToggle()<CR>
+
+" align all | characters when typing |
+function! s:align()
+  let p = '^\s*|\s.*\s|\s*$'
+  if exists(':Tabularize') && getline('.') =~# '^\s*|' && (getline(line('.')-1) =~# p || getline(line('.')+1) =~# p)
+    let column = strlen(substitute(getline('.')[0:col('.')],'[^|]','','g'))
+    let position = strlen(matchstr(getline('.')[0:col('.')],'.*|\s*\zs.*'))
+    Tabularize/|/l1
+    normal! 0
+    call search(repeat('[^|]*|',column).'\s\{-\}'.repeat('.',position),'ce',line('.'))
+  endif
+endfunction

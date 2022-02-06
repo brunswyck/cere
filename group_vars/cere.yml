@@ -1,1 +1,3 @@
 # variables common to all Cere nodes
+cere_container_name: "cere"
+cere_dockerhub_repo: "cerebellumnetwork/pos-node"

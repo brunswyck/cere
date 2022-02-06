@@ -1,0 +1,9 @@
+#jinja2:lstrip_blocks: True
+{% for host in groups[{{ group_to_add }}] %}
+Host {{ host }}
+  AddressFamily inet
+  HostName {{ host }}
+  User {{ admin }}
+  Port {{ ssh.port }} 
+  IdentityFile {{ ssh.private }}
+{% endfor %}

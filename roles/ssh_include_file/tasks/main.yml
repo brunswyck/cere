@@ -1,0 +1,39 @@
+---
+# tasks file for roles/ssh_include_file
+- name: "generating local ssh config for this monitoring stack"
+  block:
+    - name: "ensure .ssh/config.d/ folder localhost"
+      file:
+        path: "/home/{{ admin }}/.ssh/config.d/"
+        state: directory
+        mode: '0700'
+        owner: "{{ admin }}"
+        group: "{{ admin }}"
+      register: ssh_config_dir
+      become: false
+
+    - stat:
+        path: "/home/{{ admin }}/.ssh/config.d/"
+      register: config_dir
+
+    - name: "generate local ssh config for this monitoring stack"
+      template:
+        src: "ssh_configd_monitor.j2"
+        dest: "/home/{{ admin }}/.ssh/config.d/monitor"
+        owner: "{{ admin }}"
+        group: "{{ admin }}"
+        mode: '0600'
+        # validate: /usr/bin/docker-compose -f %s config --quiet
+        backup: false
+      register: configd_monitor_template
+      when: config_dir.stat.exists
+
+    - name: "ensure ~/.ssh/config includes ~/.ssh/config.d/monitor ssh config"
+      ansible.builtin.lineinfile:
+        dest: "/home/{{ admin }}/.ssh/config"
+        insertbefore: BOF  # beginning of file
+        line: 'Include config.d/monitor'
+      when: (config_dir.stat.exists and configd_monitor_template is succeeded)
+  delegate_to: localhost
+  check_mode: false  # execute in check mode
+
