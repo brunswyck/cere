@@ -1,5 +1,5 @@
 ---
-- name: operations localhost
+- name: pre-bootstrap operations on localhost
   hosts: localhost
   gather_facts: True
   vars_files:
@@ -16,42 +16,39 @@
 
 - name: bootstrap validators
   hosts: testing
+  # serial: 5
   gather_facts: True
-  vars:
-    ansible_user: root
-    ansible_port: 22
-  pre_tasks:
-    - setup:
-        gather_subset:
-          - os_family
   vars_files:
     - vault/secrets.yml      # my encrypted variables
     - group_vars/all.yml     # variables that apply to all servers
     - group_vars/cere.yml    # variables that apply to all cere servers
 
   roles:
-    - role: bootstrap
-    - role: user_profiles
-      tags: user_profiles
-    - role: ssh_server
-      tags: ssh_server
+    - { role: user_profiles, ansible_user: "root", ansible_port: 22, tags: user_profiles }
+    - { role: ssh_server, ansible_user: "root", ansible_port: 22, tags: ssh_server }
 
-    # - role: bootstrap
+    - role: docker_setup
+      tags: docker_setup
 
-    # add local ssh config to ~/.ssh/config.d/<yourservername>
-    #- role: ssh_configd_add_node
-    #      vars:
-    #        server_ip: 
-    #
-    #    - role: docker_setup
-    #      when: ansible_facts['distribution'] == 'Ubuntu'
-    #      tags: docker
-    #
-    #    - role: cere
-    #      vars:  # vars here override those defined in role/defaults/main.yml
-    #        network: "devnet"  # devnet|devs-cluster-[12345]|mainnet|qanet|testnet
-    #
-    #    - role: ufw
-    #      vars:
-    #        ports: { allow: [30333], deny: [9933, 9944] }
-    #      tags: ufw
+      # network: devnet|devs-cluster-[12345]|mainnet|qanet|testnet
+    - { role: validator_prep, network: "devnet", tags: validator_prep }
+      # ntype: validator | full | archive
+    - { role: validator_launch, network: "devnet", ntype: "validator", tags: validator_launch }
+
+    - { role: ufw, ports: { allow: [30333], deny: [9933, 9944] }, tags: ufw }
+
+    #- { role: validator_cleanup, network: "devnet", ntype: "validator", tags: validator_cleanup }
+
+
+- name: post-bootstrap operations on localhost
+  hosts: localhost
+  vars_files:
+    - vault/secrets.yml      # my encrypted variables
+    - group_vars/all.yml     # variables that apply to all servers
+    - group_vars/cere.yml    # variables that apply to all cere servers
+
+  roles:
+      # adds hosts to ~/.ssh/config.d/<inventory-group>
+    - role: ssh_include_file
+      tags: ssh_include_file
+

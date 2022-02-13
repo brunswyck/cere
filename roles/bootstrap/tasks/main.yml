@@ -1,9 +1,0 @@
----
-# tasks file for roles/bootstrap
-# if you need encrypted vars in role you need to load file again
-# - include_vars: vault/secrets.yml
-# all:!mainnet - all hosts except those in testnet group
-# https://docs.ansible.com/ansible/latest/user_guide/intro_patterns.html
-
-- debug:
-    msg: "{{ hostvars[ansible_hostname]}}"

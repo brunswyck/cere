@@ -1,0 +1,76 @@
+---
+# tasks file for roles/docker_setup
+# https://docs.docker.com/engine/install/ubuntu/
+- name: check if docker-compose library is installed
+  ansible.builtin.command:
+    cmd: "/usr/local/bin/docker-compose --version"
+  register: dc_installed
+  check_mode: false
+  ignore_errors: true
+  changed_when: false
+
+- name: install docker on node
+  block:  # will not execute if dc present & correct version
+    - name: ensure docker prerequisites
+      ansible.builtin.apt:
+        name:
+          - ntp
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+
+    - name: add docker gpg key
+      ansible.builtin.apt_key:
+        url: "https://download.docker.com/linux/ubuntu/gpg"
+        state: present
+
+    - name: add docker repo
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ os.codename }} stable"
+        state: present
+
+    - name: install docker-ce docker-ce-cli and containerd.io
+      ansible.builtin.apt:
+        name: ["docker-ce", "docker-ce-cli", "containerd.io", "docker-compose"]
+        state: present
+      ignore_errors: "{{ ansible_check_mode }}"
+
+
+    - name: download docker-compose to {{ dc.target }}
+      ansible.builtin.command:
+        cmd: curl -L "{{ dc.repo }}{{ dc.version }}/{{ dc.binary }}" -o "{{ dc.target }}"
+
+    - name: chmod +x "{{ dc.target }}"
+      ansible.builtin.file:
+        path: "{{ dc.target }}"
+        mode: '+x'
+        owner: "{{ admin }}"
+        group: "{{ admin }}"
+      ignore_errors: "{{ ansible_check_mode }}"
+
+    - name: add all admins to additional docker group
+      ansible.builtin.user:
+        name: "{{ item }}"
+        append: yes
+        groups: docker
+      ignore_errors: "{{ ansible_check_mode }}"  # docker group doesn't exist at check time
+      loop: "{{ admins }}"  # list of admins defined in group_vars/all.yml
+  become: true
+  when: (dc_installed.rc != 0)
+
+- name: check docker-compose version
+  ansible.builtin.shell:
+    cmd: '/usr/local/bin/docker-compose --version | grep -oP "(?<=version\s)(v?\d+\.\d+\.\d+)"'
+  register: dc_version
+  check_mode: false
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: dc_installed.rc != 0
+  # failed_when: "not 'docker-compose version' in dc_version.stdout"
+  failed_when: "not dc.version in dc_version.stdout"
+
+- debug:
+    msg: "{{ dc_version }}"
+  when: dc_version is failed

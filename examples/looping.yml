@@ -1,0 +1,4 @@
+- name: loop with exponential delay
+  retries: 10
+  delay: '{{item|int}}'
+  loop: '{{ range(1, 10)|map('pow', 2) }}'

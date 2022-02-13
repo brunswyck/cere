@@ -1,5 +1,7 @@
 ---
 # tasks file for roles/ssh_server
+- include_vars: vault/secrets.yml
+
 - name: "ensure openssh-server"
   ansible.builtin.apt:
     name: "openssh-server"
@@ -8,14 +10,21 @@
     cache_valid_time: 3600
   become: true
 
-- name: "ensure ~/.ssh dir for {{ admin }}"
+- ansible.builtin.stat:
+    path: "/home/{{ admin }}/.ssh"
+  register: ssh_folder
+
+- name: "ensure ~/.ssh dir for {{ item.name }}"
   file:
-    path: "/home/{{ admin }}/.ssh/"
+    path: "/home/{{ item.name }}/.ssh/"
     state: directory
     mode: '0700'
-    owner: "{{ admin }}"
-    group: "{{ admin }}"
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
   become: true
+  loop: "{{ admins }}"
+  register: local_ssh_folder_created
+  when: not ssh_folder.stat.exists
 
   # below template uses ssh.public var from vault/secrets.yml
   # better to have it encrypted
@@ -27,7 +36,10 @@
     mode: '0600'
     owner: "{{ admin }}"
     group: "{{ admin }}"
+  become_user: "{{ admin }}"
   become: true
+  when: (ssh_folder.stat.exists or local_ssh_folder_created is succeeded)
+
 
 - name: change ssh port in file
   block:
@@ -54,7 +66,7 @@
         # sed -e '/22\/tcp/s/22/secretnumberhere/'
   become: true
 
-- name: update sshd configuration safely, avoid locking yourself out
+- name: validate sshd configuration and template
   template:
     src: sshd_config.j2
     dest: /etc/ssh/sshd_config

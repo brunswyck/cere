@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+{% set NODETYPE = {"validator": "add_validation_node_custom", "full": "full_node", "archive": "archive_node" }[ntype] -%}
+CONFIG="$HOME/cere/configs/.env.{{ network }}"
+nohup docker-compose --env-file ${CONFIG} up -d {{ NODETYPE }} >/dev/null 2>&1

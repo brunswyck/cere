@@ -1,0 +1,11 @@
+---
+# defaults file for roles/docker_setup
+# https://github.com/docker/compose/releases
+dc:  # docker-compose
+  repo: https://github.com/docker/compose/releases/download/
+  version: v2.2.3  # same as seen in output docker-compose --version or gh download url
+  binary: docker-compose-linux-x86_64
+  target: /usr/local/bin/docker-compose
+
+os:
+  codename: focal

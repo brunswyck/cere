@@ -1,0 +1,44 @@
+# https://docs.ansible.com/ansible/latest/user_guide/intro_patterns.html#advanced-pattern-options
+You can define a host or subset of hosts by its position in a group
+For example, given the following group:
+
+[webservers]
+cobweb
+webbing
+weber
+
+you can use subscripts to select individual hosts or ranges within the webservers group:
+
+webservers[0]       # == cobweb
+webservers[-1]      # == weber
+webservers[0:2]     # == webservers[0],webservers[1]
+                    # == cobweb,webbing
+webservers[1:]      # == webbing,weber
+webservers[:3]      # == cobweb,webbing,weber
+
+Using regexes in patterns
+You can specify a pattern as a regular expression by starting the pattern with ~:
+
+~(web|db).*\.example\.com
+
+all             = All Hosts from your inventory file
+host1           = A single host (host1)
+host1:host2     = Both host1 and host2
+group1          = A single group (group1)
+group1:group2   = All servers in group1 and group2
+group1:\&group2 = Only servers that are both in group1 and group2
+group1:\!group2 = Servers in group1 except those also in group2
+
+
+$ ansible dbservers:\!production -m ping
+
+limit the hosts you target on a particular run with the --limit flag:
+
+$ ansible -m [module] -a "[module options]" --limit "host1,host2"
+$ ansible -m [module] -a "[module options]" --limit 'all:!host1'
+$ ansible -m [module] -a "[module options]" --limit 'group1'
+
+you can use --limit to read the list of hosts from a file by prefixing the file name with @:
+
+$ ansible-playbook site.yml --limit @retry_hosts.txt
+

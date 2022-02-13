@@ -1,2 +1,3 @@
 ---
 # defaults file for roles/ssh_include_file
+group_to_include: cere  # all hosts from this group will be added to .ssh/config.d/

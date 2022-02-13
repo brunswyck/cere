@@ -1,3 +1,18 @@
 # variables common to all Cere nodes
-cere_container_name: "cere"
-cere_dockerhub_repo: "cerebellumnetwork/pos-node"
+local: { scripts: "~/myscripts", rpc: 9933, wss: 9944 }  # socket for devnet, qanet
+public: { rpc: 9934, wss: 9945 } # socket for mainnet, testnet
+cere:
+  domain: "cere.network"
+  dockerhub:
+    repo: "cerebellumnetwork/pos-node"
+  container:
+    name: "cere"
+  chain:
+    data: "~/cere/chain-data"
+  repo:
+    install_scripts: "https://github.com/Cerebellum-Network/nodes-installation-scripts.git"
+    branch: "master"
+  home: "~/cere"
+  configs: "~/cere/configs"  # contains all .env files
+  scripts: "~/cere/scripts"
+  loglevel: debug

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+VALIDATOR_LAST_BLOCK=$((`curl -sH 'Content-Type: application/json' --data '{ "jsonrpc":"2.0", "method":"chain_getBlock", "id":1 }' localhost:{{ local.rpc }} | jq -r '.result |.block.header.number'`))
+{% if network in ["devnet", "qanet"] %}
+RPC_FQDN='http://rpc.{{ network }}.{{ cere.domain }}:{{ local.rpc }}'
+{% else %}
+RPC_FQDN='https://rpc.{{ network }}.{{ cere.domain }}:{{ public.rpc }}'
+{% endif %}
+REMOTE_LAST_BLOCK=$((`curl -sH 'Content-Type: application/json' --data '{ "jsonrpc":"2.0", "method":"chain_getBlock", "id":1 }' ${RPC_FQDN} | jq -r '.result |.block.header.number'`))
+
+echo 'last block on validator: ${VALIDATOR_LAST_BLOCK}'
+echo 'last block on {{ network }}: ${REMOTE_LAST_BLOCK}'

@@ -2,7 +2,7 @@ all:
   hosts:
   vars:
     default:
-      pkgs: [vim, mlocate]
+      pkgs: [vim, mlocate, jq]
   children:
     cere:
       children:

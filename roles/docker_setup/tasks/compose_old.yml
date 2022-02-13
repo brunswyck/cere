@@ -1,0 +1,42 @@
+        # update_cache: True # this creates /var/lib/apt/lists/lock
+        #       ignore_errors: true
+        #       become: true
+        # 
+        #     - name: collect docker-compose details
+        #       ansible.builtin.stat:
+        #         path: ~/.docker/cli-plugins/docker-compose
+        #       register: compose_file
+        # 
+        #     - name: report file size compose binary
+        #       debug:
+        #         msg: "{{ ( compose_file.stat.size / 1024 / 1024 ) | int }}MB"
+        #       when: compose_file.stat.exists
+        # 
+        #     - name: report file size compose binary
+        #       debug:
+        #         msg: "{{ compose_file.stat.mtime }}"
+        #       when: compose_file.stat.exists
+        # 
+        #     - name: create docker cli plugins folder
+        #       file:
+        #         path: ~/.docker/cli-plugins/
+        #         state: directory
+        #       when: not compose_file.stat.exists
+
+      # https://github.com/docker/compose/releases
+      #    - name: download docker-compose "{{ compose_version }}"
+      #      shell:
+      #        curl -L "https://github.com/docker/compose/releases/download/{{ compose_version }}/docker-compose-{{ os }}-{{ arch }}" -o ~/.docker/cli-plugins/docker-compose
+      #      when: compose_install
+
+    - name: chmod +x ~/.docker/cli-plugins/docker-compose
+      file:
+        path: "/home/{{ admin }}/.docker/cli-plugins/docker-compose"
+        mode: '+x'
+        owner: "{{ admin }}"
+        group: "{{ admin }}"
+      ignore_errors: "{{ ansible_check_mode }}"
+      become: true
+- set_fact:
+    timestamp_month_ago: "{{ ansible_facts['date_time']['epoch'] |int|abs - 3000000 }}"
+  run_once: true

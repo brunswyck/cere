@@ -1,0 +1,97 @@
+---
+# tasks file for validator_prep
+
+# devnet|mainnet|qanet|testnet|ext-devs-cluster-[12345]
+- fail:
+    msg: 'you forgot to define network variable eg "testnet"'
+  when: (network is undefined) or (network|length == 0)
+
+# https://docs.ansible.com/ansible/latest/user_guide/playbooks_tests.html#testing-strings
+- name: assert that network variable is valid
+  ansible.builtin.assert:
+    that: network is regex("(((dev|qa|test|main)(net))|(ext-devs-cluster-\d))")
+    success_msg: "network variable {{ network }} correctly set"
+    fail_msg: "network variable {{ network }} invalid!"
+
+- name: check if ~/cere/ folder is present
+  ansible.builtin.stat:
+    path: "{{ cere.home }}"
+  register: cere_folder
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: "create cere folder if non-existent"
+  ansible.builtin.file:
+    path: "{{ cere.home }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ admin }}"
+    group: "{{ admin }}"
+  register: cere_dir_created
+  when: not cere_folder.stat.exists
+  become: false
+
+- name: clone latest scripts from cere github to ~/cere
+  ansible.builtin.git:
+    repo: "{{ cere.repo.install_scripts }}"
+    dest: "{{ cere.home }}"
+    version: "{{ cere.repo.branch }}"
+    update: true
+    force: true
+  changed_when: False
+  register: cloned_scripts
+  when: ((cere_folder.stat.exists) or (cere_dir_created is succeeded))
+
+- name: check if ~/cere/scripts folder is present
+  ansible.builtin.stat:
+    path: "{{ cere.scripts }}"
+  register: cere_scripts_folder
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: get list of env config files
+  ansible.builtin.command:
+    chdir: "{{ cere.configs }}"
+    cmd: ls --almost-all
+  register: possible_configs
+  changed_when: false  # never report changed
+  when: cere_scripts_folder.stat.exists
+
+- set_fact:
+    config_list: "{{ possible_configs.stdout_lines }}"
+  when: cere_scripts_folder.stat.exists
+
+- set_fact:
+    config_file: ".env.{{ network }}"
+
+- name: assert config_file is in config_list
+  assert:
+    that: config_file in config_list
+    success_msg: "config file matches network chosen"
+    fail_msg: "config file {{ config_file }} not found in {{ config_list }}!"
+  when:
+    - cere_scripts_folder.stat.exists
+    - not ansible_check_mode
+
+- name: ensure permissions on chain-data folder
+  ansible.builtin.file:
+    path: "{{ cere.chain.data }}"
+    mode: '0777'
+    owner: "{{ admin }}"
+    group: "{{ admin }}"
+    recurse: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  become: true
+  when: cere_scripts_folder.stat.exists
+
+
+  # need to be in cere.folder or chmod check fails need to be sudo for port check
+- name: run env-host-check
+  ansible.builtin.command:
+    cmd: ./env-host-check.sh --full
+  args:
+    chdir: "{{ cere.home }}"
+  when: cere_scripts_folder.stat.exists
+  register: env_check
+  failed_when: "'✘' in env_check.stdout"
+  changed_when: false
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"

@@ -2,4 +2,4 @@
 - hosts: localhost
   remote_user: root
   roles:
-    - roles/bootstrap
+    - roles/docker_setup

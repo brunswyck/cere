@@ -1,11 +1,13 @@
 ---
 local:
+  scripts: ~/myscripts
   outputs: ~/outputs
 remote:
   outputs: ~/outputs
 admin: dadude
+admins: [dadude]
 ssh:
   private: "~/.ssh/metaverse"
   port: 99
 default:
-  pkgs: [vim, mlocate, curl]
+  pkgs: [vim, mlocate, curl, jq]

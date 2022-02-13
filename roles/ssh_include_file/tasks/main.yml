@@ -1,39 +1,38 @@
 ---
 # tasks file for roles/ssh_include_file
-- name: "generating local ssh config for this monitoring stack"
+- name: "generating local ssh config for servers in {{ group_to_add }}"
   block:
     - name: "ensure .ssh/config.d/ folder localhost"
-      file:
-        path: "/home/{{ admin }}/.ssh/config.d/"
+      ansible.builtin.file:
+        path: "/home/{{ local_admin }}/.ssh/config.d/"
         state: directory
         mode: '0700'
-        owner: "{{ admin }}"
-        group: "{{ admin }}"
+        owner: "{{ local_admin }}"
+        group: "{{ local_admin }}"
       register: ssh_config_dir
       become: false
 
-    - stat:
-        path: "/home/{{ admin }}/.ssh/config.d/"
+    - ansible.builtin.stat:
+        path: "/home/{{ local_admin }}/.ssh/config.d/"
       register: config_dir
 
-    - name: "generate local ssh config for this monitoring stack"
-      template:
-        src: "ssh_configd_monitor.j2"
-        dest: "/home/{{ admin }}/.ssh/config.d/monitor"
-        owner: "{{ admin }}"
-        group: "{{ admin }}"
+    - name: "generate local ssh config for every server in {{ group_to_include }} group"
+      ansible.builtin.template:
+        src: "ssh_add_node.j2"
+        dest: "/home/{{ local_admin }}/.ssh/config.d/{{ group_to_include }}"
+        owner: "{{ local_admin }}"
+        group: "{{ local_admin }}"
         mode: '0600'
         # validate: /usr/bin/docker-compose -f %s config --quiet
         backup: false
       register: configd_monitor_template
-      when: config_dir.stat.exists
+      when: ((config_dir.stat.exists) and (group_to_include is defined))
 
-    - name: "ensure ~/.ssh/config includes ~/.ssh/config.d/monitor ssh config"
+    - name: "ensure ~/.ssh/config includes ~/.ssh/config.d/{{ group_to_include }} ssh config"
       ansible.builtin.lineinfile:
-        dest: "/home/{{ admin }}/.ssh/config"
+        dest: "/home/{{ local_admin }}/.ssh/config"
         insertbefore: BOF  # beginning of file
-        line: 'Include config.d/monitor'
+        line: 'Include config.d/{{ group_to_include }}'
       when: (config_dir.stat.exists and configd_monitor_template is succeeded)
   delegate_to: localhost
-  check_mode: false  # execute in check mode
-
+  run_once: True

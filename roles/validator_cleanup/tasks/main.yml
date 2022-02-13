@@ -1,0 +1,38 @@
+---
+# tasks file for roles/validator_cleanup
+- fail:
+    msg: 'you forgot to define ntype variable eg "validator"'
+  when: (ntype is undefined) or (ntype|length == 0)
+
+- name: assert that ntype variable is valid
+  ansible.builtin.assert:
+    that: ntype is regex("(validator|full|archive)")
+    success_msg: "ntype variable: {{ ntype }}, correctly set"
+    fail_msg: "ntype variable: {{ ntype }}, invalid!"
+
+- set_fact:
+    container_name: "add_validation_node_custom"
+  when: ntype is match("validator")
+
+- set_fact:
+    container_name: "cere_full_node"
+  when: ntype is match("full")
+
+- set_fact:
+    container_name: "cere_archive_node"
+  when: ntype is match("archive")
+
+# remove add_validator too when full node?
+
+- name: stop validator container
+  ansible.builtin.command:
+    cmd: docker container stop "{{ container_name }}"
+
+  # removes image too
+- name: rm validator container
+  ansible.builtin.command:
+    cmd: docker container rm -f "{{ container_name }}"
+
+- name: remove chain data
+  ansible.builtin.command:
+    cmd: rm -rf chain-data/chains

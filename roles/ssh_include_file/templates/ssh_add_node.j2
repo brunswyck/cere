@@ -1,9 +1,9 @@
-#jinja2:lstrip_blocks: True
-{% for host in groups[{{ group_to_add }}] %}
-Host {{ host }}
+#jinja2:lstrip_blocks: True, trim_blocks: False
+{% for host in groups[group_to_include] %}
+Host {{ hostvars[host]['inventory_hostname'] }}
   AddressFamily inet
-  HostName {{ host }}
-  User {{ admin }}
-  Port {{ ssh.port }} 
+  HostName {{ hostvars[host]['inventory_hostname'] }}
+  User {{ local_admin }}
+  Port {{ ssh.port }}
   IdentityFile {{ ssh.private }}
 {% endfor %}

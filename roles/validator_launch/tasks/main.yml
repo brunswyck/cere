@@ -1,0 +1,121 @@
+---
+# tasks file for roles/validator_launch
+# gitbook:
+# https://cere-network.gitbook.io/cere-network/node/install-and-update/start-a-node
+
+- fail:
+    msg: 'you forgot to define ntype variable eg "validator"'
+  when: (ntype is undefined) or (ntype|length == 0)
+
+- name: assert that ntype variable is valid
+  ansible.builtin.assert:
+    that: ntype is regex("(validator|full|archive)")
+    success_msg: "ntype variable: {{ ntype }}, correctly set"
+    fail_msg: "ntype variable: {{ ntype }}, invalid!"
+
+- set_fact:
+    container_name: "add_validation_node_custom"
+  when: ntype is match("validator")
+
+- set_fact:
+    container_name: "cere_full_node"
+  when: ntype is match("full")
+
+- set_fact:
+    container_name: "cere_archive_node"
+  when: ntype is match("archive")
+
+- name: template compose.sh file
+  ansible.builtin.template:
+    src: "compose.sh.j2"
+    dest: "{{ cere.scripts }}/compose.sh"
+    owner: "{{ admin }}"
+    group: "{{ admin }}"
+    mode: "0755"
+    backup: true
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: setting node_name in .env.{{ network }} file
+  ansible.builtin.lineinfile:
+    path: "{{ cere.configs }}/.env.{{ network }}"
+    regexp: "NODE_NAME=NODE_NAME"
+    line: "NODE_NAME={{ inventory_hostname }}-{{ network }}"
+    state: present
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: setting log level in .env.{{ network }} file
+  ansible.builtin.lineinfile:
+    path: "{{ cere.configs }}/.env.{{ network }}"
+    regexp: "LOG_LEVEL=debug"
+    line: "LOG_LEVEL={{ cere.loglevel }}"
+    state: present
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: "check if {{ container_name }} container is already running"
+  ansible.builtin.command:
+    cmd: docker container inspect -f '{{ "{{" }}.State.Status {{ "}}" }}' "{{ container_name }}"
+  register: container_up
+  changed_when: False
+  ignore_errors: True
+
+- name: "launch container in detached mode with compose.sh file"
+  ansible.builtin.command:
+    cmd: scripts/compose.sh
+    chdir: "{{ cere.home }}"
+  register: pwd_test
+  when: '"running" not in container_up.stdout'
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: fetch container id
+  ansible.builtin.shell:
+    cmd: docker ps --no-trunc | grep -oP '\w+(?=\s+cerebellumnetwork/pos-node)'
+  register: cid
+  changed_when: False
+
+- set_fact:
+    log_path: /var/lib/docker/containers/{{ cid.stdout }}/{{ cid.stdout }}-json.log
+
+- name: Wait for "Local node identity is" in logs
+  ansible.builtin.command:
+    cmd: grep -oP '((Local node identity is:\s+))\K([a-zA-Z0-9]+)' "{{ log_path }}"
+  register: node_id
+  retries: 5
+  until: node_id.rc == 0
+  become: True
+  changed_when: False
+  tags: skip
+
+- name: check RPC port "{{ local.rpc }}" is listening
+  ansible.builtin.command:
+    cmd: fuser -sn tcp "{{ local.rpc }}"
+  register: rpc_result
+  become: True
+
+- name: "check if {{ local.scripts }} folder is present"
+  ansible.builtin.stat:
+    path: "{{ local.scripts }}"
+  register: myscripts_folder
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: "create {{ local.scripts }} if non-existent"
+  ansible.builtin.file:
+    path: "{{ local.scripts }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ admin }}"
+    group: "{{ admin }}"
+  register: myscripts_dir_created
+  when: not myscripts_folder.stat.exists
+  become: false
+
+- name: template compose.sh file
+  ansible.builtin.template:
+    src: "rpc_calls.sh.j2"
+    dest: "{{ local.scripts }}/rpc_calls.sh"
+    owner: "{{ admin }}"
+    group: "{{ admin }}"
+    mode: "0755"
+    backup: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: myscripts_folder.stat.exists
+
